@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="submit"], input[type="button"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    input[type="submit"]:hover, input[type="button"]:hover {
+      background-color: #45a049;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table td {
+      width: 33.33%;
+      height: 100px;
+      text-align: center;
+      font-size: 24px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    table td:hover {
+      background-color: #f2f2f2;
+    }
+    .actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .reset-button {
+      background-color: #f44336;
+    }
+  </style>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+  <div class="container">
+    <h1>Tic Tac Toe</h1>
+    <% if @game.new_record? %>
+      <%= form_with(model: @game, url: games_path) do |form| %>
+        <div>
+          <%= form.label :player1_name, "Player 1 Name" %>
+          <%= form.text_field :player1_name %>
+          <%= form.hidden_field :player1_symbol, value: 'X' %>
+        </div>
+        <div>
+          <%= form.label :player2_name, "Player 2 Name" %>
+          <%= form.text_field :player2_name %>
+          <%= form.hidden_field :player2_symbol, value: 'O' %>
+        </div>
+        <%= form.submit "Start Game" %>
+      <% end %>
+    <% else %>
+      <h2>Current Game</h2>
+      <table>
+        <% @game.board.each_with_index do |row, i| %>
+          <tr>
+            <% row.each_with_index do |cell, j| %>
+              <td onclick="makeMove(<%= i %>, <%= j %>)"><%= cell || '-' %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </table>
+      <div class="actions">
+        <%= form_with(model: @game, url: game_path(@game), method: :patch) do |form| %>
+          <%= hidden_field_tag :row, nil, id: "game_row" %>
+          <%= hidden_field_tag :col, nil, id: "game_col" %>
+          <%= hidden_field_tag :player, nil, id: "game_player" %>
+          <%= form.submit "End Turn", id: "end_turn_button", style: "display: none;" %>
+        <% end %>
+        <%= button_to "Reset Game", @game, method: :delete, data: { confirm: "Are you sure?" }, class: "reset-button" %>
+      </div>
+    <% end %>
+  </div>
+  <script>
+    function makeMove(row, col) {
+      document.getElementById("game_row").value = row;
+      document.getElementById("game_col").value = col;
+      document.getElementById("game_player").value = (turn === 0) ? '<%= @game.player1_name %>' : '<%= @game.player2_name %>';
+      document.getElementById("end_turn_button").click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe - Game Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table td {
+      width: 33.33%;
+      height: 100px;
+      text-align: center;
+      font-size: 24px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    table td:hover {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+  <div class="container">
+    <h1>Game Details</h1>
+    <h2>Player 1: <%= @game.player1_name %> (X)</h2>
+    <h2>Player 2: <%= @game.player2_name %> (O)</h2>
+    <h2>Current Board:</h2>
+    <table>
+      <% @game.board.each_with_index do |row, i| %>
+        <tr>
+          <% row.each_with_index do |cell, j| %>
+            <!-- Ensure each cell has a unique ID -->
+            <td id="cell_<%= i %>_<%= j %>" onclick="makeMove(<%= i %>, <%= j %>)"><%= cell || '-' %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </table>
+
+  </div>
+  
+  <form id="game_form" action="<%= game_path(@game) %>" method="post">
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    <%= hidden_field_tag :row, nil, id: "game_row" %>
+    <%= hidden_field_tag :col, nil, id: "game_col" %>
+    <%= hidden_field_tag :player, nil, id: "game_player" %>
+    <%= hidden_field_tag :_method, :patch %>
+    <%= csrf_meta_tags %>
+  </form>
+
+<script>
+  function makeMove(row, col) {
+    // Check if the cell is already filled
+    var cellValue = document.getElementById("cell_" + row + "_" + col).innerText;
+    if (cellValue.trim() !== '-') {
+      alert("This cell is already filled. Please choose an empty cell.");
+      return; // Exit the function without submitting the form
+    }
+
+    // Set the form fields
+    document.getElementById("game_row").value = row;
+    document.getElementById("game_col").value = col;
+
+    // Fetch the current player's name from the form field
+    var currentPlayer = document.getElementById("game_player").value;
+
+    // Optionally, update the UI to reflect the move
+    document.getElementById("cell_" + row + "_" + col).innerText = (currentPlayer === '<%= @game.player1_name %>') ? 'X' : 'O';
+
+    // Toggle the player for the next move
+    document.getElementById("game_player").value = (currentPlayer === '<%= @game.player1_name %>') ? '<%= @game.player2_name %>' : '<%= @game.player1_name %>';
+
+    // Submit the form
+    document.getElementById("game_form").submit();
+  }
+</script>
+
+</body>
+</html>

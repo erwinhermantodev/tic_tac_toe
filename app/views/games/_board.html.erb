@@ -1,0 +1,9 @@
+<table class="table">
+  <% @game.board.each_with_index do |row, i| %>
+    <tr>
+      <% row.each_with_index do |cell, j| %>
+        <td><%= cell || '-' %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
