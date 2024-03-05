@@ -47,20 +47,21 @@
 <body>
   <div class="container">
     <h1>Game Details</h1>
-    <h2>Player 1: <%= @game.player1_name %> (X)</h2>
-    <h2>Player 2: <%= @game.player2_name %> (O)</h2>
+    <h2>Player 1: <%= @game.player1_name %> (<%= @game.player1_symbol %>)</h2>
+    <h2>Player 2: <%= @game.player2_name %> (<%= @game.player2_symbol %>)</h2>
     <h2>Current Board:</h2>
+    <% if @game.status.present? %>
+      <p id="gameStatus" data-status="<%= @game.status %>"><%= @game.status %></p>
+    <% end %>
     <table>
       <% @game.board.each_with_index do |row, i| %>
         <tr>
           <% row.each_with_index do |cell, j| %>
-            <!-- Ensure each cell has a unique ID -->
             <td id="cell_<%= i %>_<%= j %>" onclick="makeMove(<%= i %>, <%= j %>)"><%= cell || '-' %></td>
           <% end %>
         </tr>
       <% end %>
     </table>
-
   </div>
   
   <form id="game_form" action="<%= game_path(@game) %>" method="post">
@@ -81,22 +82,52 @@
       return; // Exit the function without submitting the form
     }
 
+    var gameStatusElement = document.getElementById("gameStatus");
+    // Check if the status element exists and get its data-status value
+    var gameStatus = gameStatusElement ? gameStatusElement.getAttribute("data-status") : "";
+
+    // Check if the game has ended by looking for "wins" in the status
+    if (gameStatus.includes("wins")) {
+      alert("Game has ended. No more moves allowed.");
+      return; // Exit the function to prevent further actions
+    }
+
+
     // Set the form fields
     document.getElementById("game_row").value = row;
     document.getElementById("game_col").value = col;
 
-    // Fetch the current player's name from the form field
-    var currentPlayer = document.getElementById("game_player").value;
+    // Fetch the current player's symbol from the form field
+    var currentPlayerSymbol = document.getElementById("game_player").value;
+
+    // Determine the next player's symbol based on the current player's symbol
+    var nextPlayerSymbol = (currentPlayerSymbol === '<%= @game.player1_symbol %>') ? '<%= @game.player2_symbol %>' : '<%= @game.player1_symbol %>';
 
     // Optionally, update the UI to reflect the move
-    document.getElementById("cell_" + row + "_" + col).innerText = (currentPlayer === '<%= @game.player1_name %>') ? 'X' : 'O';
+    document.getElementById("cell_" + row + "_" + col).innerText = nextPlayerSymbol;
 
-    // Toggle the player for the next move
-    document.getElementById("game_player").value = (currentPlayer === '<%= @game.player1_name %>') ? '<%= @game.player2_name %>' : '<%= @game.player1_name %>';
+    // Update the hidden form field with the next player's symbol
+    document.getElementById("game_player").value = nextPlayerSymbol;
 
     // Submit the form
     document.getElementById("game_form").submit();
   }
+
+  function checkGameStatus() {
+      var gameStatusElement = document.getElementById("gameStatus");
+      var currentStatus = gameStatusElement ? gameStatusElement.getAttribute("data-status") : "";
+      var previousStatus = localStorage.getItem("previousStatus");
+      
+      if (currentStatus !== previousStatus && previousStatus !== null) {
+        alert("Game status has changed: " + currentStatus);
+      }
+      
+      // Update previous status
+      localStorage.setItem("previousStatus", currentStatus);
+    }
+    
+    // Call the function on page load
+    window.onload = checkGameStatus;
 </script>
 
 </body>

@@ -10,22 +10,19 @@ class GamesController < ApplicationController
     if @game.save
       redirect_to game_path(@game)
     else
-      render :index
+      render :index, status: :unprocessable_entity
     end
   end
 
   def show
-    @game = Game.find(params[:id])
-    @current_player_name = determine_current_player_name(@game)
+    @current_player_name = @game.current_player_name
   end
 
   def update
-    @game = Game.find(params[:id])
-    if @game.make_move(params[:row].to_i, params[:col].to_i, params[:player])
-      redirect_to @game
+    if @game.make_move(params[:row].to_i, params[:col].to_i)
+      redirect_to game_path(@game), notice: 'Move was successfully made.'
     else
-      flash[:error] = "Invalid move!"
-      redirect_to @game
+      redirect_to game_path(@game), alert: 'Invalid move!'
     end
   end
 

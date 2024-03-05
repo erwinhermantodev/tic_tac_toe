@@ -1,39 +1,46 @@
-# app/models/game.rb
 class Game < ApplicationRecord
   serialize :board, Array, coder: JSON
 
   validates :player1_name, :player2_name, presence: true
 
   before_validation :initialize_board, on: :create
-
   after_initialize :set_default_turn, if: :new_record?
 
   def set_default_turn
     self.turn ||= 0
+    self.status = nil # Set status to nil when initializing a new game
   end
 
   def current_player_name
-    turn.even? ? player1_name : player2_name
+    turn.even? ? player2_name : player1_name
   end
 
-  def make_move(row, col, player)
-    return false if board[row][col] # If the cell is already occupied, it's an invalid move
+  def current_player_symbol
+    turn.even? ? 'X' : 'O'
+  end
+
+  def make_move(row, col)
+    return false if board[row][col].present? # If the cell is already occupied, it's an invalid move
     
-    # Update the board with the player's symbol
-    board[row][col] = (player == player1_name) ? 'X' : 'O'
+    # Update the board with the current player's symbol
+    board[row][col] = current_player_symbol
 
-    # Check for winning condition
-    if check_winner
-      self.status = "#{player} wins!"
-      save
-    elsif board_full?
-      self.status = "It's a draw!"
-      save
-    else
-      save
-    end
+    # Increment turn before checking for a win or draw
+    self.turn += 1
 
+    # Check for winning condition or draw
+    update_status if check_winner || board_full?
+
+    save
     true
+  end
+
+  def player1_symbol
+    'X'
+  end
+  
+  def player2_symbol
+    'O'
   end
 
   private
@@ -43,34 +50,31 @@ class Game < ApplicationRecord
   end
 
   def check_winner
-    # Check rows
-    board.each do |row|
-      return true if row.uniq.length == 1 && !row[0].nil?
-    end
-
-    # Check columns
-    (0..2).each do |col|
-      column = [board[0][col], board[1][col], board[2][col]]
-      return true if column.uniq.length == 1 && !column[0].nil?
-    end
-
-    # Check diagonals
-    diagonals = [
-      [board[0][0], board[1][1], board[2][2]],
-      [board[0][2], board[1][1], board[2][0]]
+    winning_patterns = [
+      [[0, 0], [0, 1], [0, 2]], # Top row
+      [[1, 0], [1, 1], [1, 2]], # Middle row
+      [[2, 0], [2, 1], [2, 2]], # Bottom row
+      [[0, 0], [1, 0], [2, 0]], # Left column
+      [[0, 1], [1, 1], [2, 1]], # Middle column
+      [[0, 2], [1, 2], [2, 2]], # Right column
+      [[0, 0], [1, 1], [2, 2]], # Top-left to bottom-right diagonal
+      [[0, 2], [1, 1], [2, 0]]  # Top-right to bottom-left diagonal
     ]
-    diagonals.each do |diag|
-      return true if diag.uniq.length == 1 && !diag[0].nil?
+
+    winning_patterns.each do |combination|
+      symbols = combination.map { |row, col| board[row][col] }
+      return symbols[0] if symbols.uniq.size == 1 && symbols[0].present? # Return the winning symbol if all cells in a combination have the same symbol
     end
 
-    false
+    nil
+  end
+
+  def update_status
+    self.status = "#{current_player_name} wins!" if check_winner
+    self.status = "It's a draw!" if board_full? && status.nil? # Set draw status if no winner and board is full
   end
 
   def board_full?
     board.flatten.all?
-  end
-
-  def player_symbol(player_name)
-    player_name == player1_name ? 'X' : 'O'
   end
 end

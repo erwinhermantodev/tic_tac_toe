@@ -1,24 +1,49 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Tic Tac Toe Game - Rails Application
 
-Things you may want to cover:
+This document provides the necessary steps to set up and run the Tic Tac Toe game Rails application and its accompanying test suite.
 
-* Ruby version
+### Prerequisites
 
-* System dependencies
+Before you begin, ensure you have the following installed:
 
-* Configuration
+- Ruby (version as specified in `.ruby-version`)
+- Rails (version as specified in `Gemfile`)
+- Bundler
+- SQLite3 or any other database your app requires
 
-* Database creation
+### Setup
 
-* Database initialization
+1. **Clone the repository:**
 
-* How to run the test suite
+   ```bash
+   git clone <REPOSITORY_URL>
+   cd <REPOSITORY_DIRECTORY>
+   ```
 
-* Services (job queues, cache servers, search engines, etc.)
+2. **Install dependencies:**
 
-* Deployment instructions
+   Navigate to the project directory and install the Ruby and Node.js dependencies:
 
-* ...
+   ```bash
+   bundle install
+   ```
+
+3. **Database setup:**
+
+   ```bash
+   rails db:migrate
+   ```
+
+4. **Start the Rails server:**
+
+   ```bash
+   rails server
+   ```
+
+5. **Running Tests with RSpec:**
+
+   ```bash
+    bundle exec rspec
+   ```
