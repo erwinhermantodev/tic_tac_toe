@@ -45,4 +45,25 @@ RSpec.describe GamesController, type: :controller do
       end
     end
   end
+
+  describe "POST #reset" do
+    let(:game) { FactoryBot.create(:game) }
+
+    it "resets the game board and updates status to 'in progress'" do
+      # Call the reset action
+      post :reset, params: { id: game.id }
+
+      # Reload the game to get the updated attributes from the database
+      game.reload
+
+      # Check if the game's board is reset to an empty state
+      expect(game.board).to eq(Array.new(3) { Array.new(3) })
+
+      # Check if the game status is updated to 'in progress'
+      expect(game.status).to eq("in progress")
+
+      # Check if the controller redirects to the game details page
+      expect(response).to redirect_to(game_path(game))
+    end
+  end
 end

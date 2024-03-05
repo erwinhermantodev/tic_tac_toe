@@ -31,6 +31,16 @@ class GamesController < ApplicationController
     redirect_to root_path
   end
 
+  def reset
+    @game = Game.find(params[:id])
+    
+
+    @game.update(board: Array.new(3) { Array.new(3) })
+    @game.update(status: "in progress")
+    
+    redirect_to game_path(@game)
+  end
+
   private
 
   def determine_current_player_name(game)

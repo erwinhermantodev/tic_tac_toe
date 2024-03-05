@@ -53,6 +53,10 @@
     <% if @game.status.present? %>
       <p id="gameStatus" data-status="<%= @game.status %>"><%= @game.status %></p>
     <% end %>
+    <button onclick="resetGame(<%= @game.id %>)">Reset Game</button>
+
+    <!-- Add a result display -->
+    <h2 id="gameResult"></h2>
     <table>
       <% @game.board.each_with_index do |row, i| %>
         <tr>
@@ -112,6 +116,29 @@
     // Submit the form
     document.getElementById("game_form").submit();
   }
+
+  function resetGame(gameId) {
+    fetch(`/games/${gameId}/reset`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= form_authenticity_token %>'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // Optionally, handle success response
+        window.location.reload(); // Reload the page to reflect changes
+      } else {
+        // Optionally, handle error response
+        console.error('Error resetting game');
+      }
+    })
+    .catch(error => {
+      console.error('Error resetting game:', error);
+    });
+  }
+
 
   function checkGameStatus() {
       var gameStatusElement = document.getElementById("gameStatus");
